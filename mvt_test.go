@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"gitee.com/ivfzhou/mvt"
+	"gitee.com/ivfzhou/modify-variables-temporarily"
 )
 
 func TestMvt_Path(t *testing.T) {
@@ -12,7 +12,7 @@ func TestMvt_Path(t *testing.T) {
 		Name string
 	}
 	target := &Somebody{}
-	m := mvt.NewWithTarget(target).PathNext("Name", "zhangsan")
+	m := modify_variables_temporarily.NewWithTarget(target).PathNext("Name", "zhangsan")
 	assert(t, target.Name, "zhangsan")
 	m.Reset()
 	assert(t, target.Name, "")
