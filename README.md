@@ -1,4 +1,4 @@
-### 模块说明
+### 说明
 
 MVT临时地修改变量。用于单元测试。
 
@@ -10,8 +10,10 @@ MVT临时地修改变量。用于单元测试。
 
 大都数情况下我们要 mock 的值是某个结构体指针变量的一个字段，该项目能链式代码风格替换这些值，之后自动还原。
 
-### 快速使用
-
+### 使用
+```shell
+go get gitee.com/ivfzhou/modify-variables-temporarily@latest
+```
 #### mvt.Path(target interface{}, path string, substitute interface{})
 
 ```golang
@@ -37,4 +39,4 @@ var fn func ()string
 mvt.New().FuncOuts(fn, mvt.OutValues{{Times: []OutValue{"hello"}}}).Reset()
 ```
 
-联系电邮：ivfzhou@aliyun.com
+联系电邮：ivfzhou@126.com
