@@ -25,6 +25,7 @@ type OutValue []interface{}
 
 // OutValues 多组函数返回值。
 type OutValues []struct {
+	// Values 函数调用的返回值
 	Values OutValue
 	// Times 每组返回值返回次数。
 	Times int
@@ -32,6 +33,9 @@ type OutValues []struct {
 
 func setVal(target reflect.Value, value reflect.Value) func() {
 	old := reflect.ValueOf(target.Interface())
+	if ok := target.CanSet(); !ok {
+		panic(fmt.Sprintf("the target cannot be set: [%v]", target.Type()))
+	}
 	target.Set(value)
 	return func() {
 		target.Set(old)
@@ -41,12 +45,15 @@ func setVal(target reflect.Value, value reflect.Value) func() {
 func setFieldByName(target reflect.Value, name string, value reflect.Value) func() {
 	field := target.FieldByName(name)
 	if !field.IsValid() {
-		panic(fmt.Sprintf("字段名错误 %s %T", name, target.Interface()))
+		panic(fmt.Sprintf("the field name is invalid: [%s] [%T]", name, target.Interface()))
 	}
 	if !unicode.IsUpper(rune(name[0])) {
 		field = reflect.NewAt(field.Type(), unsafe.Pointer(field.UnsafeAddr())).Elem()
 	}
 	old := reflect.ValueOf(field.Interface())
+	if ok := field.CanSet(); !ok {
+		panic(fmt.Sprintf("the target cannot be set: [%v]", target.Type()))
+	}
 	field.Set(value)
 	return func() {
 		field.Set(old)
@@ -56,13 +63,16 @@ func setFieldByName(target reflect.Value, name string, value reflect.Value) func
 func setField(target reflect.Value, index int, value reflect.Value) func() {
 	field := target.Field(index)
 	if !field.IsValid() {
-		panic(fmt.Sprintf("字段序号错误 %d %T", index, target.Interface()))
+		panic(fmt.Sprintf("the index is invalid: [%d] [%T]", index, target.Interface()))
 	}
 	fieldType := target.Type().Field(index)
 	if !unicode.IsUpper(rune(fieldType.Name[0])) {
 		field = reflect.NewAt(field.Type(), unsafe.Pointer(field.UnsafeAddr())).Elem()
 	}
 	old := reflect.ValueOf(field.Interface())
+	if ok := field.CanSet(); !ok {
+		panic(fmt.Sprintf("the target cannot be set: [%v]", target.Type()))
+	}
 	field.Set(value)
 	return func() {
 		field.Set(old)
@@ -72,6 +82,9 @@ func setField(target reflect.Value, index int, value reflect.Value) func() {
 func setElem(target reflect.Value, index int, value reflect.Value) func() {
 	elem := target.Index(index)
 	old := reflect.ValueOf(elem.Interface())
+	if ok := elem.CanSet(); !ok {
+		panic(fmt.Sprintf("the target cannot be set: [%v]", target.Type()))
+	}
 	elem.Set(value)
 	return func() {
 		elem.Set(old)
@@ -88,6 +101,9 @@ func setMap(target reflect.Value, key reflect.Value, value reflect.Value) func()
 
 func setFuncOuts(target reflect.Value, outs OutValues) func() {
 	old := reflect.ValueOf(target.Interface())
+	if ok := target.CanSet(); !ok {
+		panic(fmt.Sprintf("the target cannot be set: [%v]", target.Type()))
+	}
 	target.Set(makeFunc(target, old, outs))
 	return func() {
 		target.Set(old)
@@ -119,9 +135,9 @@ func generateOutValues(fn reflect.Value, outs OutValues) [][]reflect.Value {
 			if out == nil {
 				oneOut = append(oneOut, reflect.Zero(typ))
 			} else {
-				tmp := reflect.New(typ)
-				tmp.Elem().Set(reflect.ValueOf(out))
-				oneOut = append(oneOut, tmp.Elem())
+				tmp := reflect.New(typ).Elem()
+				tmp.Set(reflect.ValueOf(out))
+				oneOut = append(oneOut, tmp)
 			}
 		}
 

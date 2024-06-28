@@ -13,36 +13,51 @@
 package modify_variables_temporarily
 
 import (
+	"fmt"
 	"reflect"
 	"strconv"
 	"unicode"
 	"unsafe"
 )
 
-type pathSet struct {
+type pathSetter struct {
 	Substitute interface{}
-
-	curKey  reflect.Value
-	setFunc []func()
-	restore []func()
+	mapKey     reflect.Value
 }
 
-func (ps *pathSet) set(pTarget reflect.Value, target reflect.Value, paths []string) []func() {
+func (ps *pathSetter) set(pTarget reflect.Value, target reflect.Value, paths []string) func() {
 	if len(paths) == 0 {
 		value := reflect.ValueOf(ps.Substitute)
+		if target.CanSet() {
+			old := reflect.ValueOf(target.Interface())
+			target.Set(value.Convert(target.Type()))
+			return func() {
+				target.Set(old)
+			}
+		}
+
 		if pTarget.Kind() == reflect.Map {
-			ps.restore = append(ps.restore, setMap(pTarget, ps.curKey, value))
-		} else {
-			ps.restore = append(ps.restore, setVal(target, value))
+			pTarget.SetMapIndex(ps.mapKey, value)
+			return func() {
+				pTarget.SetMapIndex(ps.mapKey, target)
+			}
 		}
 
-		funcs := ps.setFunc
-		length := len(funcs)
-		for i := length - 1; i >= 0; i-- {
-			funcs[i]()
+		if target.Kind() == reflect.Ptr || target.Kind() == reflect.Interface {
+			target = target.Elem()
+			for target.Kind() == reflect.Ptr || target.Kind() == reflect.Interface {
+				target = target.Elem()
+			}
+			if target.CanSet() {
+				old := reflect.ValueOf(target.Interface())
+				target.Set(value.Convert(target.Type()))
+				return func() {
+					target.Set(old)
+				}
+			}
 		}
 
-		return ps.restore
+		panic(fmt.Sprintf("the target cannot set: [%s]", target.Type()))
 	}
 
 	path := paths[0]
@@ -55,7 +70,10 @@ func (ps *pathSet) set(pTarget reflect.Value, target reflect.Value, paths []stri
 			name  string
 		)
 		if unicode.IsDigit(rune(path[0])) {
-			index, _ := strconv.Atoi(path)
+			index, err := strconv.Atoi(path)
+			if err != nil {
+				panic(fmt.Sprintf("path is unsatisfied, deal with [%s] failure: %v", path, err))
+			}
 			field = target.Field(index)
 			name = target.Type().Field(index).Name
 		} else {
@@ -68,25 +86,12 @@ func (ps *pathSet) set(pTarget reflect.Value, target reflect.Value, paths []stri
 
 		return ps.set(target, field, paths[1:])
 
-	case reflect.Ptr:
+	case reflect.Ptr, reflect.Interface:
 		elem := target.Elem()
-		return ps.set(target, elem, paths)
-
-	case reflect.Interface:
-		value := target.Elem()
-		elemKind := value.Kind()
-		if elemKind != reflect.Ptr && elemKind != reflect.Map && elemKind != reflect.Slice && elemKind != reflect.Interface {
-			newVal := reflect.New(value.Type()).Elem()
-			newVal.Set(value)
-			ps.setFunc = append(ps.setFunc, func() {
-				target.Set(newVal)
-			})
-			ps.restore = append(ps.restore, func() {
-				target.Set(value)
-			})
-			return ps.set(target, newVal, paths)
+		for elem.Kind() == reflect.Ptr || elem.Kind() == reflect.Interface {
+			elem = elem.Elem()
 		}
-		return ps.set(target, value, paths)
+		return ps.set(target, elem, paths)
 
 	case reflect.Map:
 		var key reflect.Value
@@ -95,27 +100,19 @@ func (ps *pathSet) set(pTarget reflect.Value, target reflect.Value, paths []stri
 		} else {
 			key = reflect.ValueOf(path)
 		}
+		ps.mapKey = key
 		value := target.MapIndex(key)
-		newVal := reflect.New(value.Type()).Elem()
-		newVal.Set(value)
-		ps.setFunc = append(ps.setFunc, func() {
-			target.SetMapIndex(key, newVal)
-		})
-		ps.restore = append(ps.restore, func() {
-			target.SetMapIndex(key, value)
-		})
-		ps.curKey = key
-		return ps.set(target, newVal, paths[1:])
+		return ps.set(target, value, paths[1:])
 
 	case reflect.Array, reflect.Slice:
 		index, err := strconv.Atoi(path)
 		if err != nil {
-			panic("path is unsatisfied: " + err.Error())
+			panic(fmt.Sprintf("path is unsatisfied, deal with [%s] failure: %v", path, err))
 		}
 		elem := target.Index(index)
 		return ps.set(target, elem, paths[1:])
 
 	default:
-		panic("path 不合理")
+		panic(fmt.Sprintf("path is unsatisfied: %v", path))
 	}
 }
