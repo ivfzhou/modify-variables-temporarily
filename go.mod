@@ -8,8 +8,6 @@
 // MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
 // See the Mulan PSL v2 for more details.
 
-module gitee.com/ivfzhou/modify-variables-temporarily/v2
+module gitee.com/ivfzhou/modify-variables-temporarily/v3
 
-go 1.18
-
-require github.com/golang/mock v1.6.0
+go 1.25
