@@ -3,7 +3,7 @@
 临时地修改变量值，用于单元测试中，临时替换某一变量值，以方便测试闭环。
 
 [![codecov](https://codecov.io/gh/ivfzhou/modify-variables-temporarily/graph/badge.svg?token=QYBRAOTH5K)](https://codecov.io/gh/ivfzhou/modify-variables-temporarily)
-[![Go Reference](https://pkg.go.dev/badge/gitee.com/ivfzhou/modify-variables-temporarily.svg)](https://pkg.go.dev/gitee.com/ivfzhou/modify-variables-temporarily)
+[![Go Reference](https://pkg.go.dev/badge/gitee.com/ivfzhou/modify-variables-temporarily/v3.svg)](https://pkg.go.dev/gitee.com/ivfzhou/modify-variables-temporarily/v3)
 
 # 二、使用
 
