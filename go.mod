@@ -10,4 +10,4 @@
 
 module gitee.com/ivfzhou/modify-variables-temporarily/v3
 
-go 1.25
+go 1.26
