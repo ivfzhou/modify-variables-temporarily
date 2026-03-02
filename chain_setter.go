@@ -152,7 +152,7 @@ func (c *chainSetter) seekValue(value reflect.Value) (
 		switch v.typ {
 		case toElem:
 			switch value.Kind() {
-			case reflect.Ptr:
+			case reflect.Pointer:
 				elemValue := value.Elem()
 				if !elemValue.IsValid() {
 					panic(newTypeInvalid(ErrCannotToNext, strings.Join(types, " -> ")))
@@ -161,7 +161,7 @@ func (c *chainSetter) seekValue(value reflect.Value) (
 				// 指向的类型是零值变量。
 				if elemValue.IsZero() {
 					switch elemValue.Kind() {
-					case reflect.Ptr: // 指针指向一个指针，指向的指针是 nil 值，那么初始化下它。
+					case reflect.Pointer: // 指针指向一个指针，指向的指针是 nil 值，那么初始化下它。
 						elemValue.Set(reflect.New(elemValue.Type().Elem())) // 给指向的指针变量分配空间。
 
 						// 回退修改时，把指向的指针变量重新设置成 nil。
@@ -196,7 +196,7 @@ func (c *chainSetter) seekValue(value reflect.Value) (
 				// 如果是 nil 指针或映射，需要分配下内存。
 				if newImplValue.IsZero() {
 					switch newImplValue.Kind() {
-					case reflect.Ptr:
+					case reflect.Pointer:
 						newImplValue.Set(reflect.New(newImplValue.Type().Elem()))
 					case reflect.Map:
 						newImplValue.Set(reflect.MakeMap(newImplValue.Type()))
@@ -234,7 +234,7 @@ func (c *chainSetter) seekValue(value reflect.Value) (
 						// 回退修改时，重置成 nil 映射。
 						tmpMapValue := fieldValue
 						restoreFuncs = append(restoreFuncs, func() { tmpMapValue.SetZero() })
-					case reflect.Ptr: // 也需要分配一个新变量使用。
+					case reflect.Pointer: // 也需要分配一个新变量使用。
 						fieldValue.Set(reflect.New(fieldValue.Type().Elem()))
 
 						// 回退修改时，重置成 nil 指针。
@@ -266,7 +266,7 @@ func (c *chainSetter) seekValue(value reflect.Value) (
 
 				if fieldValue.IsZero() {
 					switch fieldValue.Kind() {
-					case reflect.Ptr:
+					case reflect.Pointer:
 						fieldValue.Set(reflect.New(fieldValue.Type().Elem()))
 
 						// 回退修改时，重置成 nil 指针。
@@ -312,7 +312,7 @@ func (c *chainSetter) seekValue(value reflect.Value) (
 					switch newMapValValue.Kind() {
 					case reflect.Map:
 						newMapValValue.Set(reflect.MakeMap(newMapValValue.Type()))
-					case reflect.Ptr:
+					case reflect.Pointer:
 						newMapValValue.Set(reflect.New(newMapValValue.Type().Elem()))
 					case reflect.Interface:
 						newMapValValue.Set(reflect.New(newMapValValue.Type()).Elem())
@@ -342,7 +342,7 @@ func (c *chainSetter) seekValue(value reflect.Value) (
 				// nil 指针和映射需要初始化下。
 				if elemValue.IsZero() {
 					switch elemValue.Kind() {
-					case reflect.Ptr:
+					case reflect.Pointer:
 						elemValue.Set(reflect.New(elemValue.Type().Elem()))
 
 						tmpPtrValue := elemValue

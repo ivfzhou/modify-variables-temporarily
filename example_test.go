@@ -142,7 +142,7 @@ func ExampleChain_run2() {
 }
 
 func ExampleChain_run3() {
-	type aInterface interface{}
+	type aInterface any
 
 	type aImpl struct {
 		name any

@@ -355,7 +355,7 @@ func TestField(t *testing.T) {
 	})
 
 	t.Run("index 越界", func(t *testing.T) {
-		numField := reflect.TypeOf(testStruct{}).NumField()
+		numField := reflect.TypeFor[testStruct]().NumField()
 		for range 100 {
 			func() {
 				defer func() {
@@ -420,7 +420,7 @@ func TestField(t *testing.T) {
 	})
 
 	t.Run("Substitute 被强转成 Target 字段类型", func(t *testing.T) {
-		numField := reflect.TypeOf(testStruct{}).NumField()
+		numField := reflect.TypeFor[testStruct]().NumField()
 		for range 100 {
 			originalValue := rand.Intn(1000)
 			target := &testStruct{
@@ -443,7 +443,7 @@ func TestField(t *testing.T) {
 	})
 
 	t.Run("正常运行", func(t *testing.T) {
-		numField := reflect.TypeOf(testStruct{}).NumField()
+		numField := reflect.TypeFor[testStruct]().NumField()
 		for range 100 {
 			originalValue := rand.Intn(1000)
 			target := &testStruct{
@@ -466,7 +466,7 @@ func TestField(t *testing.T) {
 	})
 
 	t.Run("Target 字段替换成零值", func(t *testing.T) {
-		numField := reflect.TypeOf(testStruct{}).NumField()
+		numField := reflect.TypeFor[testStruct]().NumField()
 		for range 100 {
 			originalValue := rand.Intn(1000)
 			target := &testStruct{
@@ -489,7 +489,7 @@ func TestField(t *testing.T) {
 	})
 
 	t.Run("零值 Target 字段替换成其它值", func(t *testing.T) {
-		numField := reflect.TypeOf(testStruct{}).NumField()
+		numField := reflect.TypeFor[testStruct]().NumField()
 		for range 100 {
 			target := &testStruct{
 				unexportedField: nil,

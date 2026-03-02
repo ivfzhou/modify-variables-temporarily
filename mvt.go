@@ -25,7 +25,7 @@ func Var(target, substitute any) Resetter {
 		panic(ErrTargetCannotBeNil)
 	}
 	ptrValue := reflect.ValueOf(target)
-	if ptrValue.Kind() != reflect.Ptr {
+	if ptrValue.Kind() != reflect.Pointer {
 		panic(ErrTargetIsNotPointer)
 	}
 	elemValue := ptrValue.Elem()
@@ -50,7 +50,7 @@ func FieldByName(target any, name string, substitute any) Resetter {
 		panic(ErrStructFieldNameCannotBeEmpty)
 	}
 	ptrValue := reflect.ValueOf(target)
-	if ptrValue.Kind() != reflect.Ptr {
+	if ptrValue.Kind() != reflect.Pointer {
 		panic(ErrTargetIsNotPointer)
 	}
 	structValue := ptrValue.Elem()
@@ -76,7 +76,7 @@ func Field(target any, index int, substitute any) Resetter {
 		panic(ErrTargetCannotBeNil)
 	}
 	ptrValue := reflect.ValueOf(target)
-	if ptrValue.Kind() != reflect.Ptr {
+	if ptrValue.Kind() != reflect.Pointer {
 		panic(ErrTargetIsNotPointer)
 	}
 	structValue := ptrValue.Elem()
@@ -144,7 +144,7 @@ func FuncOuts(target any, outs []OutValue) Resetter {
 		panic(ErrTargetCannotBeNil)
 	}
 	ptrValue := reflect.ValueOf(target)
-	if ptrValue.Kind() != reflect.Ptr {
+	if ptrValue.Kind() != reflect.Pointer {
 		panic(ErrTargetIsNotPointer)
 	}
 	funcValue := ptrValue.Elem()
@@ -167,7 +167,7 @@ func Chain(target any) Chainer {
 		panic(ErrTargetCannotBeNilType)
 	}
 	switch value.Kind() {
-	case reflect.Slice, reflect.Map, reflect.Ptr:
+	case reflect.Slice, reflect.Map, reflect.Pointer:
 	default:
 		if !value.CanSet() {
 			panic(ErrTargetCannotBeSet)
