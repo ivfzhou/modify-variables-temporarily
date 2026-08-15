@@ -56,7 +56,7 @@ func generateFuncOutValues(funcType reflect.Type, outs []OutValue) [][]reflect.V
 			out = append(out, newOutValue)
 		}
 		for len(out) < numOut {
-			outValueType := funcType.Out(len(out) - 1)
+			outValueType := funcType.Out(len(out))
 			out = append(out, reflect.Zero(outValueType))
 		}
 		if v.Times <= 0 {

@@ -14,6 +14,7 @@ package modify_variables_temporarily
 
 import (
 	"reflect"
+	"slices"
 	"strings"
 )
 
@@ -47,7 +48,6 @@ func (c *chainSetter) Elem() ChainSetter {
 	actions := make([]*action, len(c.actions)+1)
 	copy(actions, c.actions)
 	actions[len(c.actions)] = act
-	c.actions = append(c.actions, act)
 	return &chainSetter{c.value, actions}
 }
 
@@ -56,7 +56,6 @@ func (c *chainSetter) FieldByName(name string) ChainSetter {
 	actions := make([]*action, len(c.actions)+1)
 	copy(actions, c.actions)
 	actions[len(c.actions)] = act
-	c.actions = append(c.actions, act)
 	return &chainSetter{c.value, actions}
 }
 
@@ -65,7 +64,6 @@ func (c *chainSetter) Field(index int) ChainSetter {
 	actions := make([]*action, len(c.actions)+1)
 	copy(actions, c.actions)
 	actions[len(c.actions)] = act
-	c.actions = append(c.actions, act)
 	return &chainSetter{c.value, actions}
 }
 
@@ -74,7 +72,6 @@ func (c *chainSetter) MapValue(key any) ChainSetter {
 	actions := make([]*action, len(c.actions)+1)
 	copy(actions, c.actions)
 	actions[len(c.actions)] = act
-	c.actions = append(c.actions, act)
 	return &chainSetter{c.value, actions}
 }
 
@@ -83,7 +80,6 @@ func (c *chainSetter) Index(index int) ChainSetter {
 	actions := make([]*action, len(c.actions)+1)
 	copy(actions, c.actions)
 	actions[len(c.actions)] = act
-	c.actions = append(c.actions, act)
 	return &chainSetter{c.value, actions}
 }
 
@@ -100,13 +96,13 @@ func (c *chainSetter) Set(substitute any) Resetter {
 	reset := generateSetOldFunc(value, old)
 	restoreFuncs = append(restoreFuncs, reset)
 
-	for i := len(callbackFuncs) - 1; i >= 0; i-- {
-		callbackFuncs[i]()
+	for _, callbackFunc := range slices.Backward(callbackFuncs) {
+		callbackFunc()
 	}
 
 	return newResetter(func() {
-		for i := len(restoreFuncs) - 1; i >= 0; i-- {
-			restoreFuncs[i]()
+		for _, restoreFunc := range slices.Backward(restoreFuncs) {
+			restoreFunc()
 		}
 	})
 }
@@ -126,13 +122,13 @@ func (c *chainSetter) SetFuncOuts(outs []OutValue) Resetter {
 	reset := generateSetOldFunc(value, old)
 	restoreFuncs = append(restoreFuncs, reset)
 
-	for i := len(callbackFuncs) - 1; i >= 0; i-- {
-		callbackFuncs[i]()
+	for _, callbackFunc := range slices.Backward(callbackFuncs) {
+		callbackFunc()
 	}
 
 	return newResetter(func() {
-		for i := len(restoreFuncs) - 1; i >= 0; i-- {
-			restoreFuncs[i]()
+		for _, restoreFunc := range slices.Backward(restoreFuncs) {
+			restoreFunc()
 		}
 	})
 }
@@ -295,10 +291,7 @@ func (c *chainSetter) seekValue(value reflect.Value) (
 			case reflect.Map:
 				key := v.args[0]
 				keyValue, mapValValue := getMapValueByKey(value, key)
-				mapOldValValue := reflect.Zero(value.Type().Elem())
-				if mapValValue.IsValid() {
-					mapOldValValue = reflect.ValueOf(mapValValue.Interface())
-				}
+				mapOldValValue := mapValValue
 
 				// 映射键值存在，新建一个键值变量，然后复制下原键值。
 				newMapValValue := reflect.New(value.Type().Elem()).Elem()

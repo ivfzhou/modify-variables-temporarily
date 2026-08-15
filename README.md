@@ -24,8 +24,6 @@ go get gitee.com/ivfzhou/modify-variables-temporarily/v3@latest
 import mvt "gitee.com/ivfzhou/modify-variables-temporarily/v3"
 ```
 
-> 要求 Go >= 1.26
-
 # 四、快速开始
 
 ### 场景：修改其他包中未导出结构体的字段
